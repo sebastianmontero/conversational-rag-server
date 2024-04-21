@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "conversational-rag-server"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+packages = [
+    { include = "app" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+langserve = {extras = ["server"], version = ">=0.0.30"}
+pydantic = "<2"
+conversational-rag = {path = "packages/conversational-rag", develop = true}
+
+
+[tool.poetry.group.dev.dependencies]
+langchain-cli = ">=0.0.15"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
