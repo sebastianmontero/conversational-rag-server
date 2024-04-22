@@ -8,6 +8,8 @@ from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough, RunnableMap, ConfigurableField
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_cohere import CohereRerank
+from typing import List, Tuple
+from langserve.pydantic_v1 import BaseModel, Field
 import os
 
 
@@ -23,15 +25,6 @@ if os.environ.get("COHERE_API_KEY", None) is None:
 # if os.environ.get("PINECONE_ENVIRONMENT", None) is None:
 #     raise Exception("Missing `PINECONE_ENVIRONMENT` environment variable.")
 
-store = {}
-
-def get_session_history(session_id: str) -> BaseChatMessageHistory:
-    if session_id not in store:
-        store[session_id] = ChatMessageHistory()
-    print("history:", store[session_id])
-    return store[session_id]
-
-
 contextualize_q_system_prompt ="""Given the following conversation and a follow up question, rephrase the 
 follow up question to be a standalone question, in its original language."""
 contextualize_q_prompt = ChatPromptTemplate.from_messages(
@@ -41,13 +34,16 @@ contextualize_q_prompt = ChatPromptTemplate.from_messages(
         ("human", "{input}"),
     ]
 )
-contextualize_model = ChatOpenAI(model="gpt-3.5-turbo", temperature=0).configurable_fields(
-    model_name=ConfigurableField(
-        id="contextualize-model",
-        name="contextualize model to use",
-        description="The model to use for contextualization. Options: gpt-3.5-turbo, gpt-4",
-    )
-)
+
+contextualize_model = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
+
+# contextualize_model = ChatOpenAI(model="gpt-3.5-turbo", temperature=0).configurable_fields(
+#     model_name=ConfigurableField(
+#         id="contextualize-model",
+#         name="contextualize model to use",
+#         description="The model to use for contextualization. Options: gpt-3.5-turbo, gpt-4",
+#     )
+# )
 
 contextualize_chain = contextualize_q_prompt | contextualize_model | StrOutputParser()
 
@@ -64,10 +60,15 @@ parser = StrOutputParser()
 
 model = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
 
-base_chain = contextualize_chain | {"context": compression_retriever, "question": RunnablePassthrough()} | prompt | model | parser
-chain = RunnableWithMessageHistory(
-    base_chain,
-    get_session_history,
-    input_messages_key="input",
-    history_messages_key="chat_history"
-)
+# User input
+class ChatHistory(BaseModel):
+    """Chat history with the bot."""
+
+    chat_history: List[Tuple[str, str]] = Field(
+        ...,
+        extra={"widget": {"type": "chat", "input": "question"}},
+    )
+    input: str
+
+chain = contextualize_chain | {"context": compression_retriever, "question": RunnablePassthrough()} | prompt | model | parser
+chain
