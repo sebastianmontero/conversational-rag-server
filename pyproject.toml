@@ -15,6 +15,7 @@ pydantic = "<2"
 conversational-rag = {path = "packages/conversational-rag", develop = true}
 conversational-rag-external-history = {path = "packages/conversational-rag-external-history", develop = true}
 conversational-rag-external-history-pinecone = {path = "packages/conversational-rag-external-history-pinecone", develop = true}
+firestore = {path = "packages/firestore", develop = true}
 
 
 [tool.poetry.group.dev.dependencies]
