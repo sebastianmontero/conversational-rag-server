@@ -4,6 +4,8 @@ from langserve import add_routes
 from conversational_rag.chain import chain as conversational_rag_chain
 from conversational_rag_external_history.chain import chain as conversational_rag_chain_external_history
 from conversational_rag_external_history_pinecone.chain import chain as conversational_rag_chain_external_history_pinecone
+from conversational_rag_external_history_pinecone_sources.chain import chain as conversational_rag_chain_external_history_pinecone_sources
+from conversational_agent_external_history_pinecone.chain import chain as conversational_agent_chain_external_history_pinecone
 from fastapi.middleware.cors import CORSMiddleware
 from firestore.models import ChatConfig
 from firestore.firestore import create_firestore_client
@@ -47,6 +49,10 @@ add_routes(app, conversational_rag_chain, path="/conversational-rag", playground
 add_routes(app, conversational_rag_chain_external_history, path="/conversational-rag-eh", playground_type="chat")
 
 add_routes(app, conversational_rag_chain_external_history_pinecone, path="/conversational-rag-ehp", playground_type="default")
+
+add_routes(app, conversational_rag_chain_external_history_pinecone_sources, path="/conversational-rag-ehps", playground_type="default")
+
+add_routes(app, conversational_agent_chain_external_history_pinecone, path="/conversational-agent-ehp", playground_type="default")
 
 if __name__ == "__main__":
     import uvicorn
